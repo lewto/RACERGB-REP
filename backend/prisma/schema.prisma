@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  password        String
+  plan            String    @default("trial")
+  isAdmin         Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  lastLogin       DateTime  @default(now())
+  trialStart      DateTime?
+  lifxToken       String?
+  selectedDevices String[]
+  broadcastDelay  Int       @default(5)
+  paypalPaymentId String?
+  integrations    Integration[]
+}
+
+model Integration {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  provider    String   // e.g., "lifx", "hue", "nanoleaf"
+  token       String
+  settings    Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Payment {
+  id            String   @id @default(cuid())
+  paypalId      String   @unique
+  userId        String
+  amount        Float
+  status        String
+  createdAt     DateTime @default(now())
+}
